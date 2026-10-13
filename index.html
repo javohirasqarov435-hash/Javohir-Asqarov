@@ -15,6 +15,8 @@
     --board-ink: #f3f6ef;
     --chalk: #f2c84b;        /* chalk yellow accent */
     --done: #2f8a5b;
+    --on-done: #ffffff;
+    --danger: #c8402f;
     --font-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
     --font-num: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   }
@@ -22,12 +24,14 @@
     :root:not([data-theme="light"]) {
       --bg: #0f1613; --surface: #17211c; --ink: #e6ede8; --muted: #93a59b; --line: #26332c;
       --board: #1c3a2c; --board-ink: #f3f6ef; --chalk: #f2c84b; --done: #5cc08b;
+      --on-done: #0f1613; --danger: #d9533f;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
     --bg: #0f1613; --surface: #17211c; --ink: #e6ede8; --muted: #93a59b; --line: #26332c;
     --board: #1c3a2c; --board-ink: #f3f6ef; --chalk: #f2c84b; --done: #5cc08b;
+    --on-done: #0f1613; --danger: #d9533f;
     color-scheme: dark;
   }
   * { box-sizing: border-box; }
@@ -94,6 +98,25 @@
   .qrow .left small { display: block; font-family: var(--font-body); font-weight: 600; font-size: 11px; color: var(--muted); }
   .note { color: var(--muted); font-size: 13px; padding: 4px 2px; }
 
+  /* Quiz / HW belgilari */
+  .checks { display: grid; gap: 6px; }
+  .checkrow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .checkrow .lbl { flex: 1; min-width: 0; font-size: 12px; opacity: .8; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 8px;
+    border: 1px solid currentColor; background: transparent; color: inherit;
+    font: 700 12.5px var(--font-body); cursor: pointer;
+  }
+  .chip .box { width: 10px; text-align: center; }
+  .chip[aria-pressed="true"] { background: var(--done); border-color: var(--done); color: var(--on-done); }
+  .chip:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+  .warn { border-radius: 10px; padding: 8px 11px; font-size: 13px; font-weight: 700; background: rgba(242,200,75,.18); color: var(--chalk); }
+  .warn.urgent { background: var(--danger); color: #fff; }
+  .prow.has-warn { display: flex; flex-direction: column; align-items: stretch; gap: 8px; border-color: var(--danger); }
+  .prow .head { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
+  .prow .ok { color: var(--done); font-weight: 700; font-size: 12px; }
+  .prow .checks { color: var(--ink); }
+
   details { border-top: 1px solid var(--line); padding-top: 10px; }
   summary { cursor: pointer; font-weight: 700; font-size: 13.5px; }
   summary:focus-visible { outline: 2px solid var(--chalk); outline-offset: 3px; border-radius: 4px; }
@@ -133,6 +156,8 @@
       <div class="unit"><div class="n" id="s">00</div><div class="u">soniya</div></div>
     </div>
     <div class="bar" id="barWrap"><i id="bar"></i></div>
+    <div id="checks"></div>
+    <div class="warn" id="warn" hidden></div>
   </section>
 
   <div class="queue">
@@ -193,8 +218,43 @@
     return DAYS[l.wd].toLowerCase();
   }
 
+  // Quiz / HW belgilari: har bir dars (sana + vaqt) uchun alohida saqlanadi.
+  var ITEMS = [
+    ["quiz", "Quiz chiqarilmadi"],
+    ["hw", "HW chiqarilmadi"],
+    ["pquiz", "Oldingi quiz tekshirilmadi"],
+    ["phw", "Oldingi HW tekshirilmadi"]
+  ];
+  var WARN_MIN = 10; // dars tugashiga shuncha daqiqa qolganda qizil ogohlantirish
+  function lessonKey(l) { return "dars-taymeri:" + new Date(l.start).toISOString().slice(0, 10) + ":" + l.s; }
+  function loadChecks(key) { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { return {}; } }
+  function saveChecks(key, c) { try { localStorage.setItem(key, JSON.stringify(c)); } catch (e) {} }
+  function missingOf(l) { var c = loadChecks(lessonKey(l)); return ITEMS.filter(function (it) { return !c[it[0]]; }).map(function (it) { return it[1]; }); }
+
+  function checksHtml(l) {
+    var key = lessonKey(l), c = loadChecks(key);
+    function chip(item, text) {
+      var on = !!c[item];
+      return '<button type="button" class="chip" id="' + key.replace(/[^\w-]/g, "_") + "_" + item + '" data-lesson="' + key + '" data-item="' + item + '" aria-pressed="' + on + '">' +
+        '<span class="box">' + (on ? "✓" : "") + "</span>" + text + "</button>";
+    }
+    return '<div class="checks">' +
+      '<div class="checkrow"><span class="lbl">Chiqarildimi?</span>' + chip("quiz", "Quiz") + chip("hw", "HW") + "</div>" +
+      '<div class="checkrow"><span class="lbl">Oldingisi tekshirildimi?</span>' + chip("pquiz", "Quiz") + chip("phw", "HW") + "</div>" +
+      "</div>";
+  }
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-item]");
+    if (!b) return;
+    var c = loadChecks(b.dataset.lesson);
+    c[b.dataset.item] = !c[b.dataset.item];
+    saveChecks(b.dataset.lesson, c);
+    tick();
+  });
+
   var $ = function (id) { return document.getElementById(id); };
-  var lastPassedKey = "";
+  var lastPassedHtml = "", lastChecksHtml = "", lastDay = -1;
 
   function renderWeek(todayWd) {
     var html = "";
@@ -216,15 +276,16 @@
     var passed = all.filter(function (l) { return l.offset === 0 && l.end <= t; });
     var upcoming = all.filter(function (l) { return l.end > t; });
 
-    // O‘tilgan darslar (faqat o‘zgarganda qayta chiziladi)
-    var key = today + ":" + passed.length;
-    if (key !== lastPassedKey) {
-      lastPassedKey = key;
-      $("passed").innerHTML = passed.map(function (l) {
-        return '<div class="prow"><span class="tick">O‘tildi</span><b>' + l.cls + '</b><span class="time">' + l.s + "–" + l.e + "</span></div>";
-      }).join("");
-      renderWeek(today);
-    }
+    if (today !== lastDay) { lastDay = today; renderWeek(today); }
+
+    // O‘tilgan darslar (faqat o‘zgarganda qayta chiziladi, tugmalar bosilishi uzilmasin)
+    var passedHtml = passed.map(function (l) {
+      var miss = missingOf(l);
+      var head = '<div class="head"><span class="tick">O‘tildi</span><b>' + l.cls + '</b><span class="time">' + l.s + "–" + l.e + "</span></div>";
+      if (!miss.length) return '<div class="prow"><span class="tick">O‘tildi</span><b>' + l.cls + '</b><span class="time"><span class="ok">✓ hammasi</span> ' + l.s + "–" + l.e + "</span></div>";
+      return '<div class="prow has-warn">' + head + '<div class="warn urgent">⚠ ' + miss.join(", ") + "</div>" + checksHtml(l) + "</div>";
+    }).join("");
+    if (passedHtml !== lastPassedHtml) { lastPassedHtml = passedHtml; $("passed").innerHTML = passedHtml; }
 
     var main = upcoming[0];
     var live = main.start <= t;
@@ -247,6 +308,14 @@
     } else {
       $("barWrap").hidden = true;
     }
+
+    var ch = checksHtml(main);
+    if (ch !== lastChecksHtml) { lastChecksHtml = ch; $("checks").innerHTML = ch; }
+    var miss = missingOf(main);
+    var warn = $("warn");
+    warn.hidden = !(live && miss.length);
+    warn.className = "warn" + (main.end - t <= WARN_MIN * 60e3 ? " urgent" : "");
+    warn.textContent = "⚠ " + miss.join(", ");
 
     // Keyingi darslar: bugungi qolganlari, bo‘lmasa navbatdagi kun
     var rest = upcoming.slice(1);
