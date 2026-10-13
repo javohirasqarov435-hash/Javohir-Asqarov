@@ -14,6 +14,6 @@ Mac yoqilganda o‘zi ishga tushishi uchun: Übersicht belgisi → **Preferences
 
 ## Sozlash
 
-- **Joyi:** `index.jsx` ichidagi `top` va `right` qiymatlarini o‘zgartiring (masalan, chap tomon uchun `right` o‘rniga `left: 24px;`).
+- **Joyi:** widgetni sichqoncha bilan sudrab, istalgan joyga qo‘ying — joyi eslab qolinadi. Ikki marta bossangiz, o‘ng yuqori burchakka qaytadi.
 - **Jadval:** `SCHEDULE` ichida har kun uchun `[boshlanish, tugash, sinf, xona, soatlar]`.
 - Vaqt har doim Toshkent bo‘yicha (UTC+5) hisoblanadi.

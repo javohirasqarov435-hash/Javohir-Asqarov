@@ -33,8 +33,12 @@ echo "==> 3/4 Übersicht'ni ishga tushiryapman..."
 open -a "$APP"
 
 echo "==> 4/4 Mac yoqilganda o'zi ochiladigan qilyapman..."
-osascript -e "tell application \"System Events\" to make login item at end with properties {path:\"$APP\", hidden:true}" >/dev/null 2>&1 \
-  || echo "    (Bu qadam o'tmadi — Übersicht belgisi → Preferences → 'Launch Übersicht when I login' ni qo'lda yoqing.)"
+if osascript -e 'tell application "System Events" to get the name of every login item' 2>/dev/null | grep -q "bersicht"; then
+  echo "    Allaqachon sozlangan."
+else
+  osascript -e "tell application \"System Events\" to make login item at end with properties {path:\"$APP\", hidden:true}" >/dev/null 2>&1 \
+    || echo "    (Bu qadam o'tmadi — Übersicht belgisi → Preferences → 'Launch Übersicht when I login' ni qo'lda yoqing.)"
+fi
 
 echo
 echo "Tayyor! Widget ekranning o'ng yuqori burchagida chiqadi."

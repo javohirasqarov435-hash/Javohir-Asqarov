@@ -17,15 +17,54 @@ const TZ_OFFSET = 5 * 3600e3; // Asia/Tashkent, yozgi vaqt yo‘q
 export const refreshFrequency = 1000;
 export const command = "true";
 
-// Joylashuv: ekranning o‘ng yuqori burchagi. top/right qiymatlarini o‘zgartirib siljiting.
 export const className = `
-  top: 40px;
-  right: 24px;
-  width: 340px;
   font-family: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
   color: #f3f6ef;
   -webkit-font-smoothing: antialiased;
 `;
+
+// Joylashuv: widgetni sichqoncha bilan sudrab siljiting, joyi eslab qolinadi.
+// Ikki marta bossangiz, o‘ng yuqori burchakka qaytadi.
+const WIDTH = 340;
+const POS_KEY = "dars-taymeri-pos";
+const defaultPos = () => ({ x: window.innerWidth - WIDTH - 24, y: 40 });
+let pos = (() => {
+  try { return JSON.parse(localStorage.getItem(POS_KEY)) || null; } catch (e) { return null; }
+})();
+const savePos = () => { try { localStorage.setItem(POS_KEY, JSON.stringify(pos)); } catch (e) {} };
+
+const startDrag = (e) => {
+  if (e.button !== 0) return;
+  const card = e.currentTarget;
+  const r = card.getBoundingClientRect();
+  const dx = e.clientX - r.left;
+  const dy = e.clientY - r.top;
+  card.style.cursor = "grabbing";
+  const move = (ev) => {
+    pos = {
+      x: Math.min(Math.max(0, ev.clientX - dx), window.innerWidth - 60),
+      y: Math.min(Math.max(0, ev.clientY - dy), window.innerHeight - 60),
+    };
+    card.style.left = pos.x + "px";
+    card.style.top = pos.y + "px";
+  };
+  const up = () => {
+    window.removeEventListener("mousemove", move);
+    window.removeEventListener("mouseup", up);
+    card.style.cursor = "grab";
+    savePos();
+  };
+  window.addEventListener("mousemove", move);
+  window.addEventListener("mouseup", up);
+  e.preventDefault();
+};
+
+const resetPos = (e) => {
+  pos = defaultPos();
+  e.currentTarget.style.left = pos.x + "px";
+  e.currentTarget.style.top = pos.y + "px";
+  savePos();
+};
 
 const wallNow = () => Date.now() + TZ_OFFSET;
 const dayStart = (t) => { const d = new Date(t); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()); };
@@ -74,8 +113,10 @@ export const render = () => {
   let queue = rest.filter((l) => l.offset === main.offset);
   if (!queue.length && rest.length) queue = [rest[0]];
 
+  const p = pos || defaultPos();
+
   return (
-    <div style={{ background: C.board, borderRadius: 18, padding: 16, display: "flex", flexDirection: "column", gap: 12, boxShadow: "0 10px 30px rgba(0,0,0,0.35)", backdropFilter: "blur(12px)" }}>
+    <div onMouseDown={startDrag} onDoubleClick={resetPos} style={{ position: "fixed", left: p.x, top: p.y, width: WIDTH, cursor: "grab", userSelect: "none", background: C.board, borderRadius: 18, padding: 16, display: "flex", flexDirection: "column", gap: 12, boxShadow: "0 10px 30px rgba(0,0,0,0.35)", backdropFilter: "blur(12px)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
         <div>
           <div style={{ fontWeight: 800, fontSize: 15 }}>Shomirza Asqarov</div>
