@@ -223,7 +223,8 @@
     ["quiz", "Quiz chiqarilmadi"],
     ["hw", "HW chiqarilmadi"],
     ["pquiz", "Oldingi quiz tekshirilmadi"],
-    ["phw", "Oldingi HW tekshirilmadi"]
+    ["phw", "Oldingi HW tekshirilmadi"],
+    ["slide", "Telegramga slayd tashlanmadi"]
   ];
   var WARN_MIN = 10; // dars tugashiga shuncha daqiqa qolganda qizil ogohlantirish
   function lessonKey(l) { return "dars-taymeri:" + new Date(l.start).toISOString().slice(0, 10) + ":" + l.s; }
@@ -241,6 +242,7 @@
     return '<div class="checks">' +
       '<div class="checkrow"><span class="lbl">Chiqarildimi?</span>' + chip("quiz", "Quiz") + chip("hw", "HW") + "</div>" +
       '<div class="checkrow"><span class="lbl">Oldingisi tekshirildimi?</span>' + chip("pquiz", "Quiz") + chip("phw", "HW") + "</div>" +
+      '<div class="checkrow"><span class="lbl">Telegram guruhiga slayd?</span>' + chip("slide", "Tashlandi") + "</div>" +
       "</div>";
   }
 

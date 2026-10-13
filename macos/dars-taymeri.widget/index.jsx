@@ -106,6 +106,7 @@ const ITEMS = [
   ["hw", "HW chiqarilmadi"],
   ["pquiz", "Oldingi quiz tekshirilmadi"],
   ["phw", "Oldingi HW tekshirilmadi"],
+  ["slide", "Telegramga slayd tashlanmadi"],
 ];
 const WARN_MIN = 10; // dars tugashiga shuncha daqiqa qolganda qattiq ogohlantirish
 const lessonKey = (l) => `dars-taymeri:${new Date(l.start).toISOString().slice(0, 10)}:${l.s}`;
@@ -143,6 +144,7 @@ const Checklist = ({ l }) => {
     <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
       <div style={row}><span style={lbl}>Chiqarildimi?</span><Chip l={l} k="quiz" text="Quiz" c={c} /><Chip l={l} k="hw" text="HW" c={c} /></div>
       <div style={row}><span style={lbl}>Oldingisi tekshirildimi?</span><Chip l={l} k="pquiz" text="Quiz" c={c} /><Chip l={l} k="phw" text="HW" c={c} /></div>
+      <div style={row}><span style={lbl}>Telegram guruhiga slayd?</span><Chip l={l} k="slide" text="Tashlandi" c={c} /></div>
     </div>
   );
 };
