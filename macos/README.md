@@ -17,3 +17,7 @@ Mac yoqilganda o‘zi ishga tushishi uchun: Übersicht belgisi → **Preferences
 - **Joyi:** widgetni sichqoncha bilan sudrab, istalgan joyga qo‘ying — joyi eslab qolinadi. Ikki marta bossangiz, o‘ng yuqori burchakka qaytadi.
 - **Jadval:** `SCHEDULE` ichida har kun uchun `[boshlanish, tugash, sinf, xona, soatlar]`.
 - Vaqt har doim Toshkent bo‘yicha (UTC+5) hisoblanadi.
+
+## Slayd eslatmasi
+
+Har bir dars tugagach, "Telegram guruhga slayd tashlandimi?" degan oyna chiqadi. **Tashlandi** bosilsa, widgetda ham belgilanadi. **Keyinroq** bosilsa (yoki javob berilmasa), 10 va 20 daqiqadan keyin yana so‘raydi.

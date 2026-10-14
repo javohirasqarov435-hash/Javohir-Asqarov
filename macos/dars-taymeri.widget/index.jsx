@@ -156,11 +156,39 @@ const Warn = ({ items, urgent }) => (
 );
 
 // macOS bildirishnomasi: har bir dars uchun bir martadan.
-const notifyOnce = (id, title, msg) => {
+const clean = (s) => s.replace(/["'\\]/g, "");
+const firstTime = (id) => {
   const key = `dars-taymeri-notified:${id}`;
-  try { if (localStorage.getItem(key)) return; localStorage.setItem(key, "1"); } catch (e) { return; }
-  const clean = (s) => s.replace(/["'\\]/g, "");
+  try { if (localStorage.getItem(key)) return false; localStorage.setItem(key, "1"); return true; } catch (e) { return false; }
+};
+const notifyOnce = (id, title, msg) => {
+  if (!firstTime(id)) return;
   run(`osascript -e 'display notification "${clean(msg)}" with title "${clean(title)}" sound name "Glass"'`).catch(() => {});
+};
+
+// Dars tugagach: "Telegram guruhga slayd tashlandimi?" oynasi.
+// "Tashlandi" bosilsa, widgetda ham belgilanadi. Belgilanmaguncha 10 va 20 daqiqadan keyin yana so‘raydi.
+const SLIDE_ROUNDS_MIN = [0, 10, 20];
+const askSlide = (l, round) => {
+  if (!firstTime(`${lessonKey(l)}:slide:${round}`)) return;
+  const title = clean(`${l.cls} — dars tugadi`);
+  const lines = [
+    `osascript`,
+    `-e 'display notification "Telegram guruhga slayd tashlandimi?" with title "${title}" sound name "Glass"'`,
+    `-e 'tell application "System Events"'`,
+    `-e 'activate'`,
+    `-e 'display dialog "${clean(l.cls)}: Telegram guruhga slayd tashlandimi?" buttons {"Keyinroq", "Tashlandi"} default button "Tashlandi" with title "${title}" giving up after 540'`,
+    `-e 'end tell'`,
+  ];
+  run(lines.join(" "))
+    .then((out) => {
+      if (String(out).includes("Tashlandi")) {
+        const c = loadChecks(l);
+        c.slide = true;
+        saveChecks(l, c);
+      }
+    })
+    .catch(() => {});
 };
 
 export const render = () => {
@@ -186,8 +214,13 @@ export const render = () => {
     notifyOnce(`${lessonKey(main)}:end`, `${main.cls}: ${WARN_MIN} daqiqa qoldi`, mainMissing.join(", "));
   }
   passed.forEach((l) => {
-    const miss = missingOf(l);
-    if (miss.length && t - l.end < 5 * 60e3) notifyOnce(`${lessonKey(l)}:after`, `${l.cls}: dars tugadi`, miss.join(", "));
+    const since = t - l.end;
+    if (!loadChecks(l).slide) {
+      const round = SLIDE_ROUNDS_MIN.filter((m) => since >= m * 60e3).length - 1;
+      if (since < 30 * 60e3) askSlide(l, round);
+    }
+    const miss = missingOf(l).filter((text) => !text.startsWith("Telegram"));
+    if (miss.length && since < 5 * 60e3) notifyOnce(`${lessonKey(l)}:after`, `${l.cls}: dars tugadi`, miss.join(", "));
   });
 
   return (
