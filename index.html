@@ -1,0 +1,353 @@
+<title>Dars Taymeri</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+  /* Layout: one narrow widget column — passed lessons on top, the live countdown card in the middle, the queue below. */
+  :root {
+    --bg: #f2f6f8;
+    --surface: #ffffff;
+    --ink: #172431;
+    --muted: #5b6b7a;
+    --line: #d8e1e8;
+    --board: #1f6f78;        /* soft teal */
+    --board-2: #2b8c8a;
+    --board-ink: #f5fbfc;
+    --chalk: #ffd166;        /* warm sunny accent */
+    --done: #2fa36b;
+    --on-done: #ffffff;
+    --danger: #e35d5b;
+    --font-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-num: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1519; --surface: #162127; --ink: #e7eef2; --muted: #93a4b0; --line: #24323a;
+      --board: #1b5d66; --board-2: #217574; --board-ink: #f5fbfc; --chalk: #ffd166; --done: #4cc38a;
+      --on-done: #0e1519; --danger: #ef6b69;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1519; --surface: #162127; --ink: #e7eef2; --muted: #93a4b0; --line: #24323a;
+    --board: #1b5d66; --board-2: #217574; --board-ink: #f5fbfc; --chalk: #ffd166; --done: #4cc38a;
+    --on-done: #0e1519; --danger: #ef6b69;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--font-body); font-size: 15px; line-height: 1.4;
+  }
+  .wrap {
+    max-width: 440px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 28px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 800; text-wrap: balance; }
+  header .sub { color: var(--muted); font-size: 12.5px; }
+  .clock { font-family: var(--font-num); font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; text-align: right; }
+  .clock small { display: block; font-family: var(--font-body); font-weight: 600; font-size: 12px; color: var(--muted); }
+
+  .label { font-size: 11px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+
+  /* Passed lessons */
+  .passed { display: flex; flex-direction: column; gap: 6px; }
+  .passed:empty { display: none; }
+  .prow {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
+    padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; color: var(--muted); font-size: 13.5px;
+  }
+  .prow b { color: var(--ink); font-weight: 600; text-decoration: line-through; text-decoration-color: var(--muted); }
+  .tick {
+    font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+    color: var(--done); border: 1px solid currentColor; border-radius: 99px; padding: 2px 8px;
+  }
+  .time { font-family: var(--font-num); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+
+  /* Main card */
+  .main {
+    background: linear-gradient(160deg, var(--board), var(--board-2)); color: var(--board-ink); border-radius: 18px; padding: 18px 18px 16px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .main .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .state { font-size: 11px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--chalk); display: flex; align-items: center; gap: 7px; }
+  .state .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--chalk); }
+  .state.live .dot { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .25; } }
+  .room { font-family: var(--font-num); font-size: 13px; border: 1px solid rgba(243,246,239,.35); border-radius: 8px; padding: 2px 8px; }
+  .cls { font-size: 28px; font-weight: 800; line-height: 1.1; letter-spacing: -.01em; }
+  .meta { font-size: 13px; opacity: .78; }
+  .count { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .unit { background: rgba(255,255,255,.12); border-radius: 12px; padding: 10px 6px 8px; text-align: center; }
+  .unit .n { font-family: var(--font-num); font-weight: 700; font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--chalk); }
+  .unit .u { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; opacity: .8; margin-top: 4px; }
+  .bar { height: 6px; border-radius: 99px; background: rgba(243,246,239,.18); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--chalk); border-radius: inherit; }
+
+  /* Queue */
+  .queue { display: flex; flex-direction: column; gap: 8px; }
+  .qrow {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px;
+    display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center;
+  }
+  .qrow.first { border-color: var(--board); border-width: 2px; padding: 10px 13px; }
+  .qrow .c { font-weight: 800; font-size: 16px; }
+  .qrow .m { color: var(--muted); font-size: 12.5px; }
+  .qrow .left { grid-row: span 2; text-align: right; font-family: var(--font-num); font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+  .qrow .left small { display: block; font-family: var(--font-body); font-weight: 600; font-size: 11px; color: var(--muted); }
+  .note { color: var(--muted); font-size: 13px; padding: 4px 2px; }
+
+  /* Quiz / HW belgilari */
+  .checks { display: grid; gap: 6px; }
+  .checkrow { display: grid; grid-template-columns: 1fr 74px 74px; align-items: center; gap: 6px; }
+  .checkrow .lbl { min-width: 0; font-size: 12px; opacity: .85; }
+  .chip {
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 5px 6px; border-radius: 8px;
+    border: 1px solid currentColor; background: transparent; color: inherit;
+    font: 700 12.5px var(--font-body); cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { background: var(--done); border-color: var(--done); color: var(--on-done); }
+  .chip:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+  .warn { border-radius: 10px; padding: 8px 11px; font-size: 13px; font-weight: 700; background: rgba(255,209,102,.2); color: var(--chalk); }
+  .warn.urgent { background: var(--danger); color: #fff; }
+  .prow.has-warn { display: flex; flex-direction: column; align-items: stretch; gap: 8px; border-color: var(--danger); }
+  .prow .head { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
+  .prow .ok { color: var(--done); font-weight: 700; font-size: 12px; }
+  .prow .checks { color: var(--ink); }
+
+  details { border-top: 1px solid var(--line); padding-top: 10px; }
+  summary { cursor: pointer; font-weight: 700; font-size: 13.5px; }
+  summary:focus-visible { outline: 2px solid var(--chalk); outline-offset: 3px; border-radius: 4px; }
+  .week { display: grid; gap: 8px; margin-top: 10px; }
+  .day { display: grid; grid-template-columns: 34px 1fr; gap: 8px; font-size: 12.5px; }
+  .day > b { color: var(--muted); padding-top: 2px; }
+  .day ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
+  .day li { display: flex; justify-content: space-between; gap: 8px; }
+  .day.today > b { color: var(--ink); }
+  .foot { color: var(--muted); font-size: 11.5px; text-align: center; }
+  @media (prefers-reduced-motion: reduce) { .state.live .dot { animation: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Javohir Asqarov</h1>
+      <div class="sub">Matematika · Sodiq School, Istirohat filiali</div>
+    </div>
+    <div class="clock"><span id="clock">--:--:--</span><small id="dayname"></small></div>
+  </header>
+
+  <div class="passed" id="passed"></div>
+
+  <section class="main" aria-live="polite">
+    <div class="top">
+      <div class="state" id="state"><span class="dot"></span><span id="stateText">Keyingi dars</span></div>
+      <div class="room" id="room">xona —</div>
+    </div>
+    <div>
+      <div class="cls" id="cls">—</div>
+      <div class="meta" id="meta"></div>
+    </div>
+    <div class="count">
+      <div class="unit"><div class="n" id="h">00</div><div class="u">soat</div></div>
+      <div class="unit"><div class="n" id="m">00</div><div class="u">daqiqa</div></div>
+      <div class="unit"><div class="n" id="s">00</div><div class="u">soniya</div></div>
+    </div>
+    <div class="bar" id="barWrap"><i id="bar"></i></div>
+    <div id="checks"></div>
+    <div class="warn" id="warn" hidden></div>
+  </section>
+
+  <div class="queue">
+    <div class="label">Undan keyin</div>
+    <div id="queue"></div>
+  </div>
+
+  <details>
+    <summary>Haftalik jadval</summary>
+    <div class="week" id="week"></div>
+  </details>
+  <div class="foot">Vaqt Toshkent bo‘yicha (UTC+5) · 13-variant · 30 soat</div>
+</div>
+
+<script>
+(function () {
+  // Ikki soatlik (juft) darslar: rasmdagi birlashgan kataklar bitta dars.
+  var SCHEDULE = {
+    1: [ ["09:00","10:35","5-Sh","410","1–2"], ["10:50","12:25","8-Sh","410","3–4"], ["14:30","16:05","6-Sh","410","7–8"] ],
+    2: [ ["09:00","10:35","9-Sh","410","1–2"],   ["10:50","12:25","6-Sh","410","3–4"],     ["14:30","16:05","7-Sh","410","7–8"] ],
+    3: [ ["09:00","10:35","7-Sh","410","1–2"],       ["10:50","12:25","8-Sh","410","3–4"], ["14:30","16:05","9-Sh","410","7–8"] ],
+    4: [ ["09:00","10:35","5-Sh","410","1–2"], ["10:50","12:25","6-Sh","410","3–4"],     ["13:35","15:10","8-Sh","410","6–7"] ],
+    5: [ ["09:00","10:35","9-Sh","410","1–2"],   ["10:50","12:25","7-Sh","410","3–4"],      ["14:30","16:05","5-Sh","410","7–8"] ]
+  };
+  var DAYS = ["Yakshanba","Dushanba","Seshanba","Chorshanba","Payshanba","Juma","Shanba"];
+  var SHORT = ["Ya","Du","Se","Ch","Pa","Ju","Sh"];
+  var TZ_OFFSET = 5 * 3600e3; // Asia/Tashkent, yozgi vaqt yo‘q
+
+  // "Devor soati" vaqti: Toshkent vaqtini UTC maydonlarida saqlaymiz.
+  function wallNow() { return Date.now() + TZ_OFFSET; }
+  function dayStart(t) { var d = new Date(t); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()); }
+  function hm(str) { var p = str.split(":"); return (+p[0] * 60 + +p[1]) * 60e3; }
+  function pad(n) { return String(n).padStart(2, "0"); }
+  function fmtClock(t) { var d = new Date(t); return pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()) + ":" + pad(d.getUTCSeconds()); }
+  function split(ms) { var x = Math.max(0, Math.floor(ms / 1000)); return [Math.floor(x / 3600), Math.floor(x / 60) % 60, x % 60]; }
+  function words(ms) {
+    var p = split(ms), out = [];
+    if (p[0]) out.push(p[0] + " soat");
+    if (p[0] || p[1]) out.push(p[1] + " daq");
+    out.push(pad(p[2]) + " son");
+    return out.join(" ");
+  }
+
+  function lessonsFrom(t, days) {
+    var base = dayStart(t), list = [];
+    for (var i = 0; i <= days; i++) {
+      var d0 = base + i * 864e5, wd = new Date(d0).getUTCDay();
+      (SCHEDULE[wd] || []).forEach(function (l) {
+        list.push({ start: d0 + hm(l[0]), end: d0 + hm(l[1]), s: l[0], e: l[1], cls: l[2], room: l[3], para: l[4], wd: wd, offset: i });
+      });
+    }
+    return list;
+  }
+
+  function dayLabel(l) {
+    if (l.offset === 0) return "bugun";
+    if (l.offset === 1) return "ertaga";
+    return DAYS[l.wd].toLowerCase();
+  }
+
+  // Quiz / HW belgilari: har bir dars (sana + vaqt) uchun alohida saqlanadi.
+  var ITEMS = [
+    ["quiz", "Quiz chiqarilmadi"],
+    ["hw", "HW chiqarilmadi"],
+    ["pquiz", "Oldingi quiz tekshirilmadi"],
+    ["phw", "Oldingi HW tekshirilmadi"],
+    ["slide", "Telegram tashlanmadi"],
+    ["dav", "Davomat qilinmadi"]
+  ];
+  var WARN_MIN = 10; // dars tugashiga shuncha daqiqa qolganda qizil ogohlantirish
+  function lessonKey(l) { return "dars-taymeri:" + new Date(l.start).toISOString().slice(0, 10) + ":" + l.s; }
+  function loadChecks(key) { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { return {}; } }
+  function saveChecks(key, c) { try { localStorage.setItem(key, JSON.stringify(c)); } catch (e) {} }
+  // "Oldingisi tekshirildimi?" faqat shu sinflarda (sinf raqami bo‘yicha).
+  var PREV_CHECKS = { 5: ["pquiz", "phw"], 6: ["pquiz", "phw"], 7: ["pquiz"] };
+  function prevFor(l) { return PREV_CHECKS[parseInt(l.cls, 10)] || []; }
+  // "Telegram" (slayd) faqat shu sinflarda; davomat hamma sinfda.
+  var SLIDE_GRADES = [5, 6, 7];
+  function slideFor(l) { return SLIDE_GRADES.indexOf(parseInt(l.cls, 10)) !== -1; }
+  function itemsFor(l) {
+    return ITEMS.filter(function (it) {
+      if (it[0] === "slide") return slideFor(l);
+      return it[0].charAt(0) !== "p" || prevFor(l).indexOf(it[0]) !== -1;
+    });
+  }
+  function missingOf(l) { var c = loadChecks(lessonKey(l)); return itemsFor(l).filter(function (it) { return !c[it[0]]; }).map(function (it) { return it[1]; }); }
+
+  function checksHtml(l) {
+    var key = lessonKey(l), c = loadChecks(key), prev = prevFor(l);
+    function chip(item, text) {
+      var on = !!c[item];
+      return '<button type="button" class="chip" id="' + key.replace(/[^\w-]/g, "_") + "_" + item + '" data-lesson="' + key + '" data-item="' + item + '" aria-pressed="' + on + '">' +
+        (on ? "✓ " : "") + text + "</button>";
+    }
+    return '<div class="checks">' +
+      '<div class="checkrow"><span class="lbl">Chiqarildimi?</span>' + chip("quiz", "Quiz") + chip("hw", "HW") + "</div>" +
+      (prev.length ? '<div class="checkrow"><span class="lbl">Oldingisi tekshirildimi?</span>' +
+        (prev.indexOf("pquiz") !== -1 ? chip("pquiz", "Quiz") : "") +
+        (prev.indexOf("phw") !== -1 ? chip("phw", "HW") : "") + "</div>" : "") +
+      '<div class="checkrow"><span class="lbl">Qilindimi?</span>' + (slideFor(l) ? chip("slide", "Tg") : "") + chip("dav", "Dav") + "</div>" +
+      "</div>";
+  }
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-item]");
+    if (!b) return;
+    var c = loadChecks(b.dataset.lesson);
+    c[b.dataset.item] = !c[b.dataset.item];
+    saveChecks(b.dataset.lesson, c);
+    tick();
+  });
+
+  var $ = function (id) { return document.getElementById(id); };
+  var lastPassedHtml = "", lastChecksHtml = "", lastDay = -1;
+
+  function renderWeek(todayWd) {
+    var html = "";
+    for (var wd = 1; wd <= 5; wd++) {
+      html += '<div class="day' + (wd === todayWd ? " today" : "") + '"><b>' + SHORT[wd] + "</b><ul>" +
+        SCHEDULE[wd].map(function (l) { return "<li><span>" + l[2] + " · " + l[3] + '</span><span class="time">' + l[0] + "–" + l[1] + "</span></li>"; }).join("") +
+        "</ul></div>";
+    }
+    $("week").innerHTML = html;
+  }
+
+  function tick() {
+    var t = wallNow();
+    var today = new Date(t).getUTCDay();
+    $("clock").textContent = fmtClock(t);
+    $("dayname").textContent = DAYS[today];
+
+    var all = lessonsFrom(t, 7);
+    var passed = all.filter(function (l) { return l.offset === 0 && l.end <= t; });
+    var upcoming = all.filter(function (l) { return l.end > t; });
+
+    if (today !== lastDay) { lastDay = today; renderWeek(today); }
+
+    // O‘tilgan darslar (faqat o‘zgarganda qayta chiziladi, tugmalar bosilishi uzilmasin)
+    var passedHtml = passed.map(function (l) {
+      var miss = missingOf(l);
+      var head = '<div class="head"><span class="tick">O‘tildi</span><b>' + l.cls + '</b><span class="time">' + l.s + "–" + l.e + "</span></div>";
+      if (!miss.length) return '<div class="prow"><span class="tick">O‘tildi</span><b>' + l.cls + '</b><span class="time"><span class="ok">✓ hammasi</span> ' + l.s + "–" + l.e + "</span></div>";
+      return '<div class="prow has-warn">' + head + '<div class="warn urgent">⚠ ' + miss.join(", ") + "</div>" + checksHtml(l) + "</div>";
+    }).join("");
+    if (passedHtml !== lastPassedHtml) { lastPassedHtml = passedHtml; $("passed").innerHTML = passedHtml; }
+
+    var main = upcoming[0];
+    var live = main.start <= t;
+    var target = live ? main.end : main.start;
+    var left = target - t;
+    var p = split(left);
+
+    $("state").className = "state" + (live ? " live" : "");
+    $("stateText").textContent = live ? "Hozir dars · tugashiga" : "Keyingi dars · boshlanishiga";
+    $("cls").textContent = main.cls;
+    $("room").textContent = "xona " + main.room;
+    $("meta").textContent = main.para + "-soat · " + main.s + "–" + main.e + (main.offset ? " · " + dayLabel(main) : "");
+    $("h").textContent = pad(p[0]);
+    $("m").textContent = pad(p[1]);
+    $("s").textContent = pad(p[2]);
+
+    if (live) {
+      $("barWrap").hidden = false;
+      $("bar").style.width = Math.min(100, (t - main.start) / (main.end - main.start) * 100) + "%";
+    } else {
+      $("barWrap").hidden = true;
+    }
+
+    var ch = checksHtml(main);
+    if (ch !== lastChecksHtml) { lastChecksHtml = ch; $("checks").innerHTML = ch; }
+    var miss = missingOf(main);
+    var warn = $("warn");
+    warn.hidden = !(live && miss.length);
+    warn.className = "warn" + (main.end - t <= WARN_MIN * 60e3 ? " urgent" : "");
+    warn.textContent = "⚠ " + miss.join(", ");
+
+    // Keyingi darslar: bugungi qolganlari, bo‘lmasa navbatdagi kun
+    var rest = upcoming.slice(1);
+    var list = rest.filter(function (l) { return l.offset === main.offset; });
+    if (!list.length && rest.length) list = [rest[0]];
+    var html = list.map(function (l, i) {
+      return '<div class="qrow' + (i === 0 ? " first" : "") + '"><div class="c">' + l.cls + '</div>' +
+        '<div class="left">' + words(l.start - t) + '<small>qoldi</small></div>' +
+        '<div class="m">' + l.s + "–" + l.e + " · xona " + l.room + (l.offset ? " · " + dayLabel(l) : "") + "</div></div>";
+    }).join("");
+    if (main.offset > 0 && passed.length) html = '<div class="note">Bugungi darslar tugadi.</div>' + html;
+    $("queue").innerHTML = html;
+  }
+
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
