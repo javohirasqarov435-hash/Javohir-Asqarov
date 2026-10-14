@@ -112,7 +112,11 @@ const WARN_MIN = 10; // dars tugashiga shuncha daqiqa qolganda qattiq ogohlantir
 const lessonKey = (l) => `dars-taymeri:${new Date(l.start).toISOString().slice(0, 10)}:${l.s}`;
 const loadChecks = (l) => { try { return JSON.parse(localStorage.getItem(lessonKey(l))) || {}; } catch (e) { return {}; } };
 const saveChecks = (l, c) => { try { localStorage.setItem(lessonKey(l), JSON.stringify(c)); } catch (e) {} };
-const missingOf = (l) => { const c = loadChecks(l); return ITEMS.filter(([k]) => !c[k]).map(([, text]) => text); };
+// "Oldingisi tekshirildimi?" faqat shu sinflarda (sinf raqami bo‘yicha).
+const PREV_CHECKS = { 5: ["pquiz", "phw"], 6: ["pquiz", "phw"], 7: ["pquiz"] };
+const prevFor = (l) => PREV_CHECKS[parseInt(l.cls, 10)] || [];
+const itemsFor = (l) => ITEMS.filter(([k]) => !k.startsWith("p") || prevFor(l).includes(k));
+const missingOf = (l) => { const c = loadChecks(l); return itemsFor(l).filter(([k]) => !c[k]).map(([, text]) => text); };
 
 const chipCss = (on) => ({
   background: on ? C.done : "transparent",
@@ -143,7 +147,12 @@ const Checklist = ({ l }) => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
       <div style={row}><span style={lbl}>Chiqarildimi?</span><Chip l={l} k="quiz" text="Quiz" c={c} /><Chip l={l} k="hw" text="HW" c={c} /></div>
-      <div style={row}><span style={lbl}>Oldingisi tekshirildimi?</span><Chip l={l} k="pquiz" text="Quiz" c={c} /><Chip l={l} k="phw" text="HW" c={c} /></div>
+      {prevFor(l).length > 0 && (
+        <div style={row}><span style={lbl}>Oldingisi tekshirildimi?</span>
+          {prevFor(l).includes("pquiz") && <Chip l={l} k="pquiz" text="Quiz" c={c} />}
+          {prevFor(l).includes("phw") && <Chip l={l} k="phw" text="HW" c={c} />}
+        </div>
+      )}
       <div style={row}><span style={lbl}>Telegram guruhiga slayd?</span><Chip l={l} k="slide" text="Tashlandi" c={c} /></div>
     </div>
   );

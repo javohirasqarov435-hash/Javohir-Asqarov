@@ -230,10 +230,14 @@
   function lessonKey(l) { return "dars-taymeri:" + new Date(l.start).toISOString().slice(0, 10) + ":" + l.s; }
   function loadChecks(key) { try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { return {}; } }
   function saveChecks(key, c) { try { localStorage.setItem(key, JSON.stringify(c)); } catch (e) {} }
-  function missingOf(l) { var c = loadChecks(lessonKey(l)); return ITEMS.filter(function (it) { return !c[it[0]]; }).map(function (it) { return it[1]; }); }
+  // "Oldingisi tekshirildimi?" faqat shu sinflarda (sinf raqami bo‘yicha).
+  var PREV_CHECKS = { 5: ["pquiz", "phw"], 6: ["pquiz", "phw"], 7: ["pquiz"] };
+  function prevFor(l) { return PREV_CHECKS[parseInt(l.cls, 10)] || []; }
+  function itemsFor(l) { return ITEMS.filter(function (it) { return it[0].charAt(0) !== "p" || prevFor(l).indexOf(it[0]) !== -1; }); }
+  function missingOf(l) { var c = loadChecks(lessonKey(l)); return itemsFor(l).filter(function (it) { return !c[it[0]]; }).map(function (it) { return it[1]; }); }
 
   function checksHtml(l) {
-    var key = lessonKey(l), c = loadChecks(key);
+    var key = lessonKey(l), c = loadChecks(key), prev = prevFor(l);
     function chip(item, text) {
       var on = !!c[item];
       return '<button type="button" class="chip" id="' + key.replace(/[^\w-]/g, "_") + "_" + item + '" data-lesson="' + key + '" data-item="' + item + '" aria-pressed="' + on + '">' +
@@ -241,7 +245,9 @@
     }
     return '<div class="checks">' +
       '<div class="checkrow"><span class="lbl">Chiqarildimi?</span>' + chip("quiz", "Quiz") + chip("hw", "HW") + "</div>" +
-      '<div class="checkrow"><span class="lbl">Oldingisi tekshirildimi?</span>' + chip("pquiz", "Quiz") + chip("phw", "HW") + "</div>" +
+      (prev.length ? '<div class="checkrow"><span class="lbl">Oldingisi tekshirildimi?</span>' +
+        (prev.indexOf("pquiz") !== -1 ? chip("pquiz", "Quiz") : "") +
+        (prev.indexOf("phw") !== -1 ? chip("phw", "HW") : "") + "</div>" : "") +
       '<div class="checkrow"><span class="lbl">Telegram guruhiga slayd?</span>' + chip("slide", "Tashlandi") + "</div>" +
       "</div>";
   }
