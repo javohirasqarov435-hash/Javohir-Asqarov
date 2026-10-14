@@ -6,32 +6,33 @@
 <style>
   /* Layout: one narrow widget column — passed lessons on top, the live countdown card in the middle, the queue below. */
   :root {
-    --bg: #eef2ef;
+    --bg: #f2f6f8;
     --surface: #ffffff;
-    --ink: #17231d;
-    --muted: #5d6e65;
-    --line: #d5ddd8;
-    --board: #1f3a2e;        /* chalkboard green */
-    --board-ink: #f3f6ef;
-    --chalk: #f2c84b;        /* chalk yellow accent */
-    --done: #2f8a5b;
+    --ink: #172431;
+    --muted: #5b6b7a;
+    --line: #d8e1e8;
+    --board: #1f6f78;        /* soft teal */
+    --board-2: #2b8c8a;
+    --board-ink: #f5fbfc;
+    --chalk: #ffd166;        /* warm sunny accent */
+    --done: #2fa36b;
     --on-done: #ffffff;
-    --danger: #c8402f;
+    --danger: #e35d5b;
     --font-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
     --font-num: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #0f1613; --surface: #17211c; --ink: #e6ede8; --muted: #93a59b; --line: #26332c;
-      --board: #1c3a2c; --board-ink: #f3f6ef; --chalk: #f2c84b; --done: #5cc08b;
-      --on-done: #0f1613; --danger: #d9533f;
+      --bg: #0e1519; --surface: #162127; --ink: #e7eef2; --muted: #93a4b0; --line: #24323a;
+      --board: #1b5d66; --board-2: #217574; --board-ink: #f5fbfc; --chalk: #ffd166; --done: #4cc38a;
+      --on-done: #0e1519; --danger: #ef6b69;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #0f1613; --surface: #17211c; --ink: #e6ede8; --muted: #93a59b; --line: #26332c;
-    --board: #1c3a2c; --board-ink: #f3f6ef; --chalk: #f2c84b; --done: #5cc08b;
-    --on-done: #0f1613; --danger: #d9533f;
+    --bg: #0e1519; --surface: #162127; --ink: #e7eef2; --muted: #93a4b0; --line: #24323a;
+    --board: #1b5d66; --board-2: #217574; --board-ink: #f5fbfc; --chalk: #ffd166; --done: #4cc38a;
+    --on-done: #0e1519; --danger: #ef6b69;
     color-scheme: dark;
   }
   * { box-sizing: border-box; }
@@ -67,7 +68,7 @@
 
   /* Main card */
   .main {
-    background: var(--board); color: var(--board-ink); border-radius: 18px; padding: 18px 18px 16px;
+    background: linear-gradient(160deg, var(--board), var(--board-2)); color: var(--board-ink); border-radius: 18px; padding: 18px 18px 16px;
     display: flex; flex-direction: column; gap: 12px;
   }
   .main .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -79,7 +80,7 @@
   .cls { font-size: 28px; font-weight: 800; line-height: 1.1; letter-spacing: -.01em; }
   .meta { font-size: 13px; opacity: .78; }
   .count { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .unit { background: rgba(0,0,0,.22); border-radius: 12px; padding: 10px 6px 8px; text-align: center; }
+  .unit { background: rgba(255,255,255,.12); border-radius: 12px; padding: 10px 6px 8px; text-align: center; }
   .unit .n { font-family: var(--font-num); font-weight: 700; font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--chalk); }
   .unit .u { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; opacity: .8; margin-top: 4px; }
   .bar { height: 6px; border-radius: 99px; background: rgba(243,246,239,.18); overflow: hidden; }
@@ -100,17 +101,16 @@
 
   /* Quiz / HW belgilari */
   .checks { display: grid; gap: 6px; }
-  .checkrow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .checkrow .lbl { flex: 1; min-width: 0; font-size: 12px; opacity: .8; }
+  .checkrow { display: grid; grid-template-columns: 1fr 74px 74px; align-items: center; gap: 6px; }
+  .checkrow .lbl { min-width: 0; font-size: 12px; opacity: .85; }
   .chip {
-    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 5px 6px; border-radius: 8px;
     border: 1px solid currentColor; background: transparent; color: inherit;
     font: 700 12.5px var(--font-body); cursor: pointer;
   }
-  .chip .box { width: 10px; text-align: center; }
   .chip[aria-pressed="true"] { background: var(--done); border-color: var(--done); color: var(--on-done); }
   .chip:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
-  .warn { border-radius: 10px; padding: 8px 11px; font-size: 13px; font-weight: 700; background: rgba(242,200,75,.18); color: var(--chalk); }
+  .warn { border-radius: 10px; padding: 8px 11px; font-size: 13px; font-weight: 700; background: rgba(255,209,102,.2); color: var(--chalk); }
   .warn.urgent { background: var(--danger); color: #fff; }
   .prow.has-warn { display: flex; flex-direction: column; align-items: stretch; gap: 8px; border-color: var(--danger); }
   .prow .head { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
@@ -250,14 +250,14 @@
     function chip(item, text) {
       var on = !!c[item];
       return '<button type="button" class="chip" id="' + key.replace(/[^\w-]/g, "_") + "_" + item + '" data-lesson="' + key + '" data-item="' + item + '" aria-pressed="' + on + '">' +
-        '<span class="box">' + (on ? "✓" : "") + "</span>" + text + "</button>";
+        (on ? "✓ " : "") + text + "</button>";
     }
     return '<div class="checks">' +
-      '<div class="checkrow"><span class="lbl">Chiqarildimi?</span>' + chip("quiz", "Q") + chip("hw", "HW") + "</div>" +
+      '<div class="checkrow"><span class="lbl">Chiqarildimi?</span>' + chip("quiz", "Quiz") + chip("hw", "HW") + "</div>" +
       (prev.length ? '<div class="checkrow"><span class="lbl">Oldingisi tekshirildimi?</span>' +
-        (prev.indexOf("pquiz") !== -1 ? chip("pquiz", "Q") : "") +
+        (prev.indexOf("pquiz") !== -1 ? chip("pquiz", "Quiz") : "") +
         (prev.indexOf("phw") !== -1 ? chip("phw", "HW") : "") + "</div>" : "") +
-      '<div class="checkrow"><span class="lbl">Qilindimi?</span>' + (slideFor(l) ? chip("slide", "Tg") : "") + chip("dav", "Dv") + "</div>" +
+      '<div class="checkrow"><span class="lbl">Qilindimi?</span>' + (slideFor(l) ? chip("slide", "Tg") : "") + chip("dav", "Dav") + "</div>" +
       "</div>";
   }
 

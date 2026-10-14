@@ -96,7 +96,7 @@ const lessonsFrom = (t, days) => {
 };
 const dayLabel = (l) => (l.offset === 0 ? "bugun" : l.offset === 1 ? "ertaga" : DAYS[l.wd].toLowerCase());
 
-const C = { board: "rgba(28,58,44,0.88)", chalk: "#f2c84b", done: "#5cc08b", muted: "rgba(243,246,239,0.62)", line: "rgba(243,246,239,0.16)" };
+const C = { board: "linear-gradient(160deg, rgba(31,111,120,0.94), rgba(43,140,138,0.94))", chalk: "#ffd166", done: "#4cc38a", danger: "#e35d5b", muted: "rgba(245,251,252,0.7)", line: "rgba(245,251,252,0.2)", tile: "rgba(255,255,255,0.12)" };
 const mono = { fontFamily: '"SF Mono", Menlo, monospace', fontVariantNumeric: "tabular-nums" };
 const label = { fontSize: 10.5, fontWeight: 800, letterSpacing: "0.09em", textTransform: "uppercase" };
 
@@ -126,48 +126,48 @@ const missingOf = (l) => { const c = loadChecks(l); return itemsFor(l).filter(([
 const chipCss = (on) => ({
   background: on ? C.done : "transparent",
   borderColor: on ? C.done : "rgba(243,246,239,0.45)",
-  color: on ? "#0f1613" : "#f3f6ef",
+  color: on ? "#0e1519" : "#f5fbfc",
 });
-const toggle = (e, l, k) => {
+const toggle = (e, l, k, text) => {
   e.stopPropagation();
   const c = loadChecks(l);
   c[k] = !c[k];
   saveChecks(l, c);
   // Darhol ko‘rsatish (keyingi soniyani kutmasdan)
   Object.assign(e.currentTarget.style, chipCss(c[k]));
-  e.currentTarget.firstChild.textContent = c[k] ? "✓" : "";
+  e.currentTarget.textContent = (c[k] ? "✓ " : "") + text;
 };
 
 const Chip = ({ l, k, text, c }) => (
-  <div data-nodrag="1" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => toggle(e, l, k)}
-    style={{ display: "inline-flex", alignItems: "center", gap: 5, border: "1px solid", borderRadius: 7, padding: "3px 8px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", ...chipCss(!!c[k]) }}>
-    <span style={{ width: 10, textAlign: "center" }}>{c[k] ? "✓" : ""}</span>{text}
+  <div data-nodrag="1" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => toggle(e, l, k, text)}
+    style={{ display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid", borderRadius: 7, padding: "4px 4px", fontSize: 11.5, fontWeight: 700, cursor: "pointer", ...chipCss(!!c[k]) }}>
+    {(c[k] ? "✓ " : "") + text}
   </div>
 );
 
 const Checklist = ({ l }) => {
   const c = loadChecks(l);
-  const row = { display: "flex", alignItems: "center", gap: 5 };
-  const lbl = { fontSize: 11, color: C.muted, flex: 1 };
+  const row = { display: "grid", gridTemplateColumns: "1fr 62px 62px", alignItems: "center", gap: 5 };
+  const lbl = { fontSize: 11, color: C.muted, minWidth: 0 };
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-      <div style={row}><span style={lbl}>Chiqarildimi?</span><Chip l={l} k="quiz" text="Q" c={c} /><Chip l={l} k="hw" text="HW" c={c} /></div>
+      <div style={row}><span style={lbl}>Chiqarildimi?</span><Chip l={l} k="quiz" text="Quiz" c={c} /><Chip l={l} k="hw" text="HW" c={c} /></div>
       {prevFor(l).length > 0 && (
         <div style={row}><span style={lbl}>Oldingisi tekshirildimi?</span>
-          {prevFor(l).includes("pquiz") && <Chip l={l} k="pquiz" text="Q" c={c} />}
+          {prevFor(l).includes("pquiz") && <Chip l={l} k="pquiz" text="Quiz" c={c} />}
           {prevFor(l).includes("phw") && <Chip l={l} k="phw" text="HW" c={c} />}
         </div>
       )}
       <div style={row}><span style={lbl}>Qilindimi?</span>
         {slideFor(l) && <Chip l={l} k="slide" text="Tg" c={c} />}
-        <Chip l={l} k="dav" text="Dv" c={c} />
+        <Chip l={l} k="dav" text="Dav" c={c} />
       </div>
     </div>
   );
 };
 
 const Warn = ({ items, urgent }) => (
-  <div style={{ borderRadius: 9, padding: "7px 10px", fontSize: 12, fontWeight: 700, lineHeight: 1.35, background: urgent ? "#c8402f" : "rgba(242,200,75,0.18)", color: urgent ? "#fff" : C.chalk }}>
+  <div style={{ borderRadius: 9, padding: "7px 10px", fontSize: 12, fontWeight: 700, lineHeight: 1.35, background: urgent ? C.danger : "rgba(255,209,102,0.2)", color: urgent ? "#fff" : C.chalk }}>
     ⚠ {items.join(", ")}
   </div>
 );
@@ -258,7 +258,7 @@ export const render = () => {
           {passed.map((l) => {
             const miss = missingOf(l);
             return (
-              <div key={l.start} style={{ display: "flex", flexDirection: "column", gap: 7, fontSize: 12.5, color: C.muted, border: `1px solid ${miss.length ? "#c8402f" : C.line}`, borderRadius: 9, padding: "6px 10px" }}>
+              <div key={l.start} style={{ display: "flex", flexDirection: "column", gap: 7, fontSize: 12.5, color: C.muted, border: `1px solid ${miss.length ? C.danger : C.line}`, borderRadius: 9, padding: "6px 10px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ ...label, fontSize: 9.5, color: C.done, border: `1px solid ${C.done}`, borderRadius: 99, padding: "1px 7px" }}>O‘tildi</span>
                   <span style={{ flex: 1, textDecoration: "line-through" }}>{l.cls}</span>
@@ -273,7 +273,7 @@ export const render = () => {
         </div>
       )}
 
-      <div style={{ background: "rgba(0,0,0,0.22)", borderRadius: 14, padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ background: C.tile, borderRadius: 14, padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
         <div style={{ ...label, color: C.chalk }}>{live ? "Hozir dars · tugashiga" : "Keyingi dars · boshlanishiga"}</div>
         <div>
           <div style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.1 }}>{main.cls}</div>
@@ -283,7 +283,7 @@ export const render = () => {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
           {[[h, "soat"], [m, "daqiqa"], [s, "soniya"]].map(([n, u]) => (
-            <div key={u} style={{ textAlign: "center", background: "rgba(0,0,0,0.25)", borderRadius: 10, padding: "8px 4px 6px" }}>
+            <div key={u} style={{ textAlign: "center", background: C.tile, borderRadius: 10, padding: "8px 4px 6px" }}>
               <div style={{ ...mono, fontWeight: 700, fontSize: 30, lineHeight: 1, color: C.chalk }}>{pad(n)}</div>
               <div style={{ fontSize: 10, letterSpacing: "0.06em", textTransform: "uppercase", color: C.muted, marginTop: 3 }}>{u}</div>
             </div>
