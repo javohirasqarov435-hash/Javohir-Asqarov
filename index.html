@@ -133,7 +133,7 @@
 <div class="wrap">
   <header>
     <div>
-      <h1>Shomirza Asqarov</h1>
+      <h1>Javohir Asqarov</h1>
       <div class="sub">Matematika · Sodiq School, Istirohat filiali</div>
     </div>
     <div class="clock"><span id="clock">--:--:--</span><small id="dayname"></small></div>
@@ -176,11 +176,11 @@
 (function () {
   // Ikki soatlik (juft) darslar: rasmdagi birlashgan kataklar bitta dars.
   var SCHEDULE = {
-    1: [ ["09:00","10:35","5 MELBOURNE","410","1–2"], ["10:50","12:25","8 COLUMBIA","410","3–4"], ["14:30","16:05","6 DUKE","410","7–8"] ],
-    2: [ ["09:00","10:35","9 CORNELL","410","1–2"],   ["10:50","12:25","6 DUKE","410","3–4"],     ["14:30","16:05","7 TUM","410","7–8"] ],
-    3: [ ["09:00","10:35","7 TUM","410","1–2"],       ["10:50","12:25","8 COLUMBIA","410","3–4"], ["14:30","16:05","9 CORNELL","410","7–8"] ],
-    4: [ ["09:00","10:35","5 MELBOURNE","410","1–2"], ["10:50","12:25","6 DUKE","410","3–4"],     ["13:35","15:10","8 COLUMBIA","410","6–7"] ],
-    5: [ ["09:00","10:35","9 CORNELL","410","1–2"],   ["10:50","12:25","7 TUM","410","3–4"],      ["14:30","16:05","5 MELBOURNE","410","7–8"] ]
+    1: [ ["09:00","10:35","5-Sh MELBOURNE","410","1–2"], ["10:50","12:25","8-Sh COLUMBIA","410","3–4"], ["14:30","16:05","6-Sh DUKE","410","7–8"] ],
+    2: [ ["09:00","10:35","9-Sh CORNELL","410","1–2"],   ["10:50","12:25","6-Sh DUKE","410","3–4"],     ["14:30","16:05","7-Sh TUM","410","7–8"] ],
+    3: [ ["09:00","10:35","7-Sh TUM","410","1–2"],       ["10:50","12:25","8-Sh COLUMBIA","410","3–4"], ["14:30","16:05","9-Sh CORNELL","410","7–8"] ],
+    4: [ ["09:00","10:35","5-Sh MELBOURNE","410","1–2"], ["10:50","12:25","6-Sh DUKE","410","3–4"],     ["13:35","15:10","8-Sh COLUMBIA","410","6–7"] ],
+    5: [ ["09:00","10:35","9-Sh CORNELL","410","1–2"],   ["10:50","12:25","7-Sh TUM","410","3–4"],      ["14:30","16:05","5-Sh MELBOURNE","410","7–8"] ]
   };
   var DAYS = ["Yakshanba","Dushanba","Seshanba","Chorshanba","Payshanba","Juma","Shanba"];
   var SHORT = ["Ya","Du","Se","Ch","Pa","Ju","Sh"];
@@ -224,7 +224,8 @@
     ["hw", "HW chiqarilmadi"],
     ["pquiz", "Oldingi quiz tekshirilmadi"],
     ["phw", "Oldingi HW tekshirilmadi"],
-    ["slide", "Telegramga slayd tashlanmadi"]
+    ["slide", "Telegram tashlanmadi"],
+    ["dav", "Davomat qilinmadi"]
   ];
   var WARN_MIN = 10; // dars tugashiga shuncha daqiqa qolganda qizil ogohlantirish
   function lessonKey(l) { return "dars-taymeri:" + new Date(l.start).toISOString().slice(0, 10) + ":" + l.s; }
@@ -233,7 +234,7 @@
   // "Oldingisi tekshirildimi?" faqat shu sinflarda (sinf raqami bo‘yicha).
   var PREV_CHECKS = { 5: ["pquiz", "phw"], 6: ["pquiz", "phw"], 7: ["pquiz"] };
   function prevFor(l) { return PREV_CHECKS[parseInt(l.cls, 10)] || []; }
-  // "Telegram guruhiga slayd" faqat shu sinflarda.
+  // "Telegram" (slayd) faqat shu sinflarda; davomat hamma sinfda.
   var SLIDE_GRADES = [5, 6, 7];
   function slideFor(l) { return SLIDE_GRADES.indexOf(parseInt(l.cls, 10)) !== -1; }
   function itemsFor(l) {
@@ -256,7 +257,7 @@
       (prev.length ? '<div class="checkrow"><span class="lbl">Oldingisi tekshirildimi?</span>' +
         (prev.indexOf("pquiz") !== -1 ? chip("pquiz", "Quiz") : "") +
         (prev.indexOf("phw") !== -1 ? chip("phw", "HW") : "") + "</div>" : "") +
-      (slideFor(l) ? '<div class="checkrow"><span class="lbl">Telegram guruhiga slayd?</span>' + chip("slide", "Tashlandi") + "</div>" : "") +
+      '<div class="checkrow"><span class="lbl">Qilindimi?</span>' + (slideFor(l) ? chip("slide", "Telegram") : "") + chip("dav", "Davomat") + "</div>" +
       "</div>";
   }
 
