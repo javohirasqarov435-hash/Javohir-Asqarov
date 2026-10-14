@@ -20,4 +20,4 @@ Mac yoqilganda o‘zi ishga tushishi uchun: Übersicht belgisi → **Preferences
 
 ## Slayd eslatmasi
 
-Har bir dars tugagach, "Telegram guruhga slayd tashlandimi?" degan oyna chiqadi. **Tashlandi** bosilsa, widgetda ham belgilanadi. **Keyinroq** bosilsa (yoki javob berilmasa), 10 va 20 daqiqadan keyin yana so‘raydi.
+5, 6 va 7-sinflarda har bir dars tugagach, "Telegram guruhga slayd tashlandimi?" degan oyna chiqadi. **Tashlandi** bosilsa, widgetda ham belgilanadi. **Keyinroq** bosilsa (yoki javob berilmasa), 10 va 20 daqiqadan keyin yana so‘raydi.

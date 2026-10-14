@@ -115,7 +115,11 @@ const saveChecks = (l, c) => { try { localStorage.setItem(lessonKey(l), JSON.str
 // "Oldingisi tekshirildimi?" faqat shu sinflarda (sinf raqami bo‘yicha).
 const PREV_CHECKS = { 5: ["pquiz", "phw"], 6: ["pquiz", "phw"], 7: ["pquiz"] };
 const prevFor = (l) => PREV_CHECKS[parseInt(l.cls, 10)] || [];
-const itemsFor = (l) => ITEMS.filter(([k]) => !k.startsWith("p") || prevFor(l).includes(k));
+// "Telegram guruhiga slayd" faqat shu sinflarda.
+const SLIDE_GRADES = [5, 6, 7];
+const slideFor = (l) => SLIDE_GRADES.includes(parseInt(l.cls, 10));
+const itemsFor = (l) => ITEMS.filter(([k]) =>
+  k === "slide" ? slideFor(l) : !k.startsWith("p") || prevFor(l).includes(k));
 const missingOf = (l) => { const c = loadChecks(l); return itemsFor(l).filter(([k]) => !c[k]).map(([, text]) => text); };
 
 const chipCss = (on) => ({
@@ -153,7 +157,7 @@ const Checklist = ({ l }) => {
           {prevFor(l).includes("phw") && <Chip l={l} k="phw" text="HW" c={c} />}
         </div>
       )}
-      <div style={row}><span style={lbl}>Telegram guruhiga slayd?</span><Chip l={l} k="slide" text="Tashlandi" c={c} /></div>
+      {slideFor(l) && <div style={row}><span style={lbl}>Telegram guruhiga slayd?</span><Chip l={l} k="slide" text="Tashlandi" c={c} /></div>}
     </div>
   );
 };
@@ -224,7 +228,7 @@ export const render = () => {
   }
   passed.forEach((l) => {
     const since = t - l.end;
-    if (!loadChecks(l).slide) {
+    if (slideFor(l) && !loadChecks(l).slide) {
       const round = SLIDE_ROUNDS_MIN.filter((m) => since >= m * 60e3).length - 1;
       if (since < 30 * 60e3) askSlide(l, round);
     }
