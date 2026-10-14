@@ -6,11 +6,11 @@ import { run } from "uebersicht";
 
 // Ikki soatlik (juft) darslar: jadvaldagi birlashgan kataklar bitta dars. Xona hammasida 410.
 const SCHEDULE = {
-  1: [["09:00", "10:35", "5-Sh MELBOURNE", "410", "1–2"], ["10:50", "12:25", "8-Sh COLUMBIA", "410", "3–4"], ["14:30", "16:05", "6-Sh DUKE", "410", "7–8"]],
-  2: [["09:00", "10:35", "9-Sh CORNELL", "410", "1–2"], ["10:50", "12:25", "6-Sh DUKE", "410", "3–4"], ["14:30", "16:05", "7-Sh TUM", "410", "7–8"]],
-  3: [["09:00", "10:35", "7-Sh TUM", "410", "1–2"], ["10:50", "12:25", "8-Sh COLUMBIA", "410", "3–4"], ["14:30", "16:05", "9-Sh CORNELL", "410", "7–8"]],
-  4: [["09:00", "10:35", "5-Sh MELBOURNE", "410", "1–2"], ["10:50", "12:25", "6-Sh DUKE", "410", "3–4"], ["13:35", "15:10", "8-Sh COLUMBIA", "410", "6–7"]],
-  5: [["09:00", "10:35", "9-Sh CORNELL", "410", "1–2"], ["10:50", "12:25", "7-Sh TUM", "410", "3–4"], ["14:30", "16:05", "5-Sh MELBOURNE", "410", "7–8"]],
+  1: [["09:00", "10:35", "5-Sh", "410", "1–2"], ["10:50", "12:25", "8-Sh", "410", "3–4"], ["14:30", "16:05", "6-Sh", "410", "7–8"]],
+  2: [["09:00", "10:35", "9-Sh", "410", "1–2"], ["10:50", "12:25", "6-Sh", "410", "3–4"], ["14:30", "16:05", "7-Sh", "410", "7–8"]],
+  3: [["09:00", "10:35", "7-Sh", "410", "1–2"], ["10:50", "12:25", "8-Sh", "410", "3–4"], ["14:30", "16:05", "9-Sh", "410", "7–8"]],
+  4: [["09:00", "10:35", "5-Sh", "410", "1–2"], ["10:50", "12:25", "6-Sh", "410", "3–4"], ["13:35", "15:10", "8-Sh", "410", "6–7"]],
+  5: [["09:00", "10:35", "9-Sh", "410", "1–2"], ["10:50", "12:25", "7-Sh", "410", "3–4"], ["14:30", "16:05", "5-Sh", "410", "7–8"]],
 };
 const DAYS = ["Yakshanba", "Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
 const TZ_OFFSET = 5 * 3600e3; // Asia/Tashkent, yozgi vaqt yo‘q
@@ -151,16 +151,16 @@ const Checklist = ({ l }) => {
   const lbl = { fontSize: 11, color: C.muted, flex: 1 };
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-      <div style={row}><span style={lbl}>Chiqarildimi?</span><Chip l={l} k="quiz" text="Quiz" c={c} /><Chip l={l} k="hw" text="HW" c={c} /></div>
+      <div style={row}><span style={lbl}>Chiqarildimi?</span><Chip l={l} k="quiz" text="Q" c={c} /><Chip l={l} k="hw" text="HW" c={c} /></div>
       {prevFor(l).length > 0 && (
         <div style={row}><span style={lbl}>Oldingisi tekshirildimi?</span>
-          {prevFor(l).includes("pquiz") && <Chip l={l} k="pquiz" text="Quiz" c={c} />}
+          {prevFor(l).includes("pquiz") && <Chip l={l} k="pquiz" text="Q" c={c} />}
           {prevFor(l).includes("phw") && <Chip l={l} k="phw" text="HW" c={c} />}
         </div>
       )}
       <div style={row}><span style={lbl}>Qilindimi?</span>
-        {slideFor(l) && <Chip l={l} k="slide" text="Telegram" c={c} />}
-        <Chip l={l} k="dav" text="Davomat" c={c} />
+        {slideFor(l) && <Chip l={l} k="slide" text="Tg" c={c} />}
+        <Chip l={l} k="dav" text="Dv" c={c} />
       </div>
     </div>
   );
